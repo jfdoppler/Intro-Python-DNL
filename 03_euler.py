@@ -42,7 +42,6 @@
 
 # In[10]:
 
-get_ipython().magic('matplotlib inline')
 import numpy as np
 import matplotlib.pyplot as plt
 

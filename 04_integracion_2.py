@@ -16,7 +16,6 @@
 import numpy as np
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
-get_ipython().magic('matplotlib inline')
 
 
 # In[12]:
@@ -135,7 +134,6 @@ ax[0].plot(t, sfunc(t))
 ax[0].set_ylabel('s')
 
 for r in rs:
-    nplot += 1
     xi = 0
     x = odeint(f, xi, t, args=(r, ))
     ax[1].plot(t, x, label='{}'.format(r))

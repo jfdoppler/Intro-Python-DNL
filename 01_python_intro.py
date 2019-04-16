@@ -213,7 +213,6 @@ print(lineal(5, ordenada=4, pendiente=-1))
 
 # In[54]:
 
-get_ipython().magic('matplotlib inline')
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
