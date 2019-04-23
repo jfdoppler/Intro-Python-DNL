@@ -20,6 +20,10 @@ def f(t, z):
     return [dxdt, dydt]
 
 
+def J(x, y):
+    return np.matrix(([1, -1], [2*x, 0]))
+
+
 # %% Nulclinas
 XX, YY = np.meshgrid(np.arange(-10, 10, .01), np.arange(-10, 10, .01))
 DX, DY = f(0, [XX, YY])
@@ -59,6 +63,7 @@ plt.xlim(-7, 7)
 plt.ylim(-7, 7)
 # %% Streamplot
 plt.streamplot(XX, YY, DX, DY, density=.5, minlength=.1)
+
 # %% con rk
 dt = 0.01
 tmax = 10
@@ -96,10 +101,6 @@ plt.ylim(-7, 7)
 
 
 # %% Linealizacion
-def J(x, y):
-    return np.matrix(([1, -1], [2*x, 0]))
-
-
 puntos_fijos = [[-2, -2], [2, 2]]
 ci_var = []
 dist = 0.01
@@ -123,6 +124,7 @@ for pf in puntos_fijos:
                       shape='full', lw=0, length_includes_head=True,
                       head_width=.4, color='r')
 plt.plot([x[0] for x in ci_var], [x[1] for x in ci_var], '.')
+
 # %% Variedad (ci cerca)
 for zi in ci_var:
     solver.set_initial_value(zi, 0)
