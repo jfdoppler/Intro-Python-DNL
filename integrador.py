@@ -100,15 +100,18 @@ def J(x, y):
     return np.matrix(([1, -1], [2*x, 0]))
 
 
-plt.figure()
 puntos_fijos = [[-2, -2], [2, 2]]
-for pf in puntos_fijos[:1]:
+ci_var = []
+dist = 0.01
+for pf in puntos_fijos:
     xpf = pf[0]
     ypf = pf[1]
     eig_val, eig_vec = np.linalg.eig(J(xpf, ypf))
     if not isinstance(eig_val[0], complex):
         for ix, eig in enumerate(eig_val):
             vec = np.transpose(np.asarray(eig_vec[:, ix]))[0]
+            ci_var.append([xpf-dist*eig*vec[0], ypf-dist*eig*vec[1]])
+            ci_var.append([xpf+dist*eig*vec[0], ypf+dist*eig*vec[1]])
             plt.plot([xpf-eig*vec[0], xpf+eig*vec[0]], [ypf-eig*vec[1], 
                       ypf+eig*vec[1]],'--r')
             plt.arrow(xpf+np.abs(eig)*vec[0]/2, ypf+np.abs(eig)*vec[1]/2,
@@ -119,5 +122,22 @@ for pf in puntos_fijos[:1]:
                       -eig*vec[0]/4, -eig*vec[1]/4,
                       shape='full', lw=0, length_includes_head=True,
                       head_width=.4, color='r')
-
+plt.plot([x[0] for x in ci_var], [x[1] for x in ci_var], '.')
 # %% Variedad (ci cerca)
+for zi in ci_var:
+    solver.set_initial_value(zi, 0)
+    xt = np.zeros_like(t)
+    xt.fill(np.nan)
+    yt = np.zeros_like(t)
+    yt.fill(np.nan)
+    for ix, tt in enumerate(t):
+        xt[ix], yt[ix] = solver.integrate(t[ix])
+    plt.plot(xt, yt, color='k', lw=2)
+    solver.set_initial_value(zi, 0)
+    xant = np.zeros_like(tant)
+    xant.fill(np.nan)
+    yant = np.zeros_like(tant)
+    yant.fill(np.nan)
+    for ix, tt in enumerate(tant):
+        xant[ix], yant[ix] = solver.integrate(tant[ix])
+    plt.plot(xant, yant, color='k', lw=2)
