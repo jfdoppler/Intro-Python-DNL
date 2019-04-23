@@ -29,14 +29,7 @@ plt.clabel(nulx, nulx.levels, fmt='$\dot{x}=0$')
 nuly = plt.contour(XX, YY, DY, levels=[0], colors='black', linestyles='dashed')
 plt.clabel(nuly, nuly.levels, fmt='$\dot{y}=0$')
 
-# %% Puntos fijos
-def abs_deriv(x, y):
-    dx, dy = f(0, [x, y])
-    return(np.sqrt(dx**2+dy**2))
-
-im = plt.imshow(DX**2+DY**2, interpolation='bilinear', origin='lower',
-                cmap=cm.gray, extent=(-10, 10, -10, 10))
-# %%
+# %% Odeint
 dt = 0.001
 tmax = 10
 t = np.arange(0, tmax, dt)
@@ -44,7 +37,7 @@ tpre = -10
 tant = np.arange(0, tpre, -dt)
 Xi = np.linspace(-4, 4, 4)
 Yi = np.linspace(-4, 4, 4)
-plt.figure()
+#plt.figure()
 for xi in Xi:
     for yi in Yi:
         plt.scatter(xi, yi)
@@ -62,9 +55,10 @@ X = np.linspace(-10, 10, 8)
 Y = np.linspace(-10, 10, 8)
 XX, YY = np.meshgrid(X, Y)
 DX, DY = f(0, [XX, YY])
+plt.xlim(-7, 7)
+plt.ylim(-7, 7)
+# %% Streamplot
 plt.streamplot(XX, YY, DX, DY, density=.5, minlength=.1)
-plt.xlim(-10, 10)
-plt.ylim(-10, 10)
 # %% con rk
 dt = 0.01
 tmax = 10
@@ -74,7 +68,6 @@ solver = ode(f).set_integrator('dopri5')
 tant = np.arange(0, tpre, -dt)
 Xi = np.linspace(-4, 4, 4)
 Yi = np.linspace(-4, 4, 4)
-plt.figure()
 for xi in Xi:
     for yi in Yi:
         zi = [xi, yi]
@@ -98,8 +91,8 @@ for xi in Xi:
         for ix, tt in enumerate(tant):
             xant[ix], yant[ix] = solver.integrate(tant[ix])
         plt.plot(xant, yant, color=c)
-plt.xlim(-10, 10)
-plt.ylim(-10, 10)
+plt.xlim(-7, 7)
+plt.ylim(-7, 7)
 
 
 # %% Linealizacion
@@ -107,4 +100,24 @@ def J(x, y):
     return np.matrix(([1, -1], [2*x, 0]))
 
 
-fp = [[-2, -2], [2, 2]]
+plt.figure()
+puntos_fijos = [[-2, -2], [2, 2]]
+for pf in puntos_fijos[:1]:
+    xpf = pf[0]
+    ypf = pf[1]
+    eig_val, eig_vec = np.linalg.eig(J(xpf, ypf))
+    if not isinstance(eig_val[0], complex):
+        for ix, eig in enumerate(eig_val):
+            vec = np.transpose(np.asarray(eig_vec[:, ix]))[0]
+            plt.plot([xpf-eig*vec[0], xpf+eig*vec[0]], [ypf-eig*vec[1], 
+                      ypf+eig*vec[1]],'--r')
+            plt.arrow(xpf+np.abs(eig)*vec[0]/2, ypf+np.abs(eig)*vec[1]/2,
+                      eig*vec[0]/4, eig*vec[1]/4,
+                      shape='full', lw=0, length_includes_head=True,
+                      head_width=.4, color='r')
+            plt.arrow(xpf-np.abs(eig)*vec[0]/2, ypf-np.abs(eig)*vec[1]/2,
+                      -eig*vec[0]/4, -eig*vec[1]/4,
+                      shape='full', lw=0, length_includes_head=True,
+                      head_width=.4, color='r')
+
+# %% Variedad (ci cerca)
