@@ -7,7 +7,7 @@ Created on Mon Apr 22 11:04:29 2019
 """
 
 import numpy as np
-from scipy.integrate import odeint, ode
+from scipy.integrate import ode
 import matplotlib.pyplot as plt
 
 
@@ -15,13 +15,13 @@ import matplotlib.pyplot as plt
 def f(t, z):
     x = z[0]
     y = z[1]
-    dxdt = x-y
-    dydt = x**2-4
+    dxdt = x+np.exp(-y)
+    dydt = -y
     return [dxdt, dydt]
 
 
 def J(x, y):
-    return np.matrix(([1, -1], [2*x, 0]))
+    return np.matrix(([1, -np.exp(-y)], [0, -1]))
 
 
 # %% Nulclinas
@@ -29,14 +29,14 @@ XX, YY = np.meshgrid(np.arange(-10, 10, .01), np.arange(-10, 10, .01))
 DX, DY = f(0, [XX, YY])
 
 plt.figure(figsize=(10, 6))
-nulx = plt.contour(XX, YY, DX, levels=[0], colors='magenta', linestyles='dashed')
+nulx = plt.contour(XX, YY, DX, levels=[0], colors='magenta', linestyles='dotted')
 plt.clabel(nulx, nulx.levels, fmt='$\dot{x}=0$')
-nuly = plt.contour(XX, YY, DY, levels=[0], colors='black', linestyles='dashed')
+nuly = plt.contour(XX, YY, DY, levels=[0], colors='black', linestyles='dotted')
 plt.clabel(nuly, nuly.levels, fmt='$\dot{y}=0$')
 plt.xlim(-10, 10)
 plt.ylim(-10, 10)
 # %% Linealizacion
-puntos_fijos = [[-2, -2], [2, 2]]
+puntos_fijos = [[-1, 0]]
 ci_var = []
 dist = 0.01
 for pf in puntos_fijos:
@@ -47,6 +47,7 @@ for pf in puntos_fijos:
     if not isinstance(eig_val[0], complex):
         for ix, eig in enumerate(eig_val):
             vec = np.transpose(np.asarray(eig_vec[:, ix]))[0]
+            print('Autovalor = {}; autovec = {}'.format(eig, vec))
             ci_var.append([xpf-dist*eig*vec[0], ypf-dist*eig*vec[1]])
             ci_var.append([xpf+dist*eig*vec[0], ypf+dist*eig*vec[1]])
             plt.plot([xpf-eig*vec[0], xpf+eig*vec[0]], [ypf-eig*vec[1], 
@@ -94,48 +95,13 @@ for xi in Xi:
         for ix, tt in enumerate(tant):
             xant[ix], yant[ix] = solver.integrate(tant[ix])
         plt.plot(xant, yant, color=c)
-plt.xlim(-4, 0)
-plt.ylim(-4, 0)
-
-# %% Espiral
-plt.xlim(0.5, 3.5)
-plt.ylim(0.5, 3.5)
 
 # %% Todo
 plt.xlim(-7, 7)
 plt.ylim(-7, 7)
 
 # %% Streamplot
-plt.streamplot(XX, YY, DX, DY, density=.5, minlength=.1)
-
-# %% Odeint
-dt = 0.001
-tmax = 10
-t = np.arange(0, tmax, dt)
-tpre = -10
-tant = np.arange(0, tpre, -dt)
-Xi = np.linspace(-4, 4, 4)
-Yi = np.linspace(-4, 4, 4)
-plt.figure()
-for xi in Xi:
-    for yi in Yi:
-        plt.scatter(xi, yi)
-        zi = [xi, yi]
-        sol_fut = odeint(f, zi, t, tfirst=True)
-        sol_pas = odeint(f, zi, tant, tfirst=True)
-        x_fut = sol_fut[:, 0]
-        x_pas = sol_pas[:, 0][::-1]
-        xt = np.concatenate((x_pas, x_fut))
-        y_fut = sol_fut[:, 1]
-        y_pas = sol_pas[:, 1][::-1]
-        yt = np.concatenate((y_pas, y_fut))
-        plt.plot(xt, yt)
-X = np.linspace(-10, 10, 8)
-Y = np.linspace(-10, 10, 8)
-XX, YY = np.meshgrid(X, Y)
-DX, DY = f(0, [XX, YY])
-plt.xlim(-7, 7)
-plt.ylim(-7, 7)
+plt.streamplot(XX, YY, DX, DY, density=1, minlength=.1)
 
 # %% Variedad (ci cerca)
 for zi in ci_var:
@@ -155,3 +121,16 @@ for zi in ci_var:
     for ix, tt in enumerate(tant):
         xant[ix], yant[ix] = solver.integrate(tant[ix])
     plt.plot(xant, yant, color='k', lw=2)
+# %%
+xx = np.linspace(-10, 10, 1000)
+coefs = [0, 2, 4/3, -38/27]
+for lastix in range(len(coefs)):
+    ix = 0
+    yy = np.zeros_like(xx)
+    while ix <= lastix:
+        yy += coefs[ix]*(xx+1)**(ix)
+        ix += 1
+    plt.plot(xx, yy, ls='dashed', label='Orden {}'.format(lastix))
+plt.xlim(-1.5, -0.5)
+plt.ylim(-0.5, 0.5)
+plt.legend()
